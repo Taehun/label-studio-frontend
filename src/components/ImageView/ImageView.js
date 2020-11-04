@@ -10,6 +10,18 @@ import Tree from "../../core/Tree";
 import styles from "./ImageView.module.scss";
 import InfoModal from "../Infomodal/Infomodal";
 
+import * as cocoSsd from "@tensorflow-models/coco-ssd";
+import * as cpu from "@tensorflow/tfjs-backend-cpu";
+import * as webgl from "@tensorflow/tfjs-backend-webgl";
+
+async function predictImage(model, img) {
+  // Classify the image.
+  const predictions = await model.detect(img);
+
+  console.log("Predictions: ");
+  console.log(predictions);
+}
+
 export default observer(
   class ImageView extends Component {
     // stored position of canvas before creating region
@@ -18,7 +30,6 @@ export default observer(
 
     handleOnClick = e => {
       const { item } = this.props;
-
       return item.event("click", e, e.evt.offsetX, e.evt.offsetY);
     };
 
@@ -107,6 +118,15 @@ export default observer(
 
     handleError = () => {
       InfoModal.error(`Cannot load image (${this.props.item._value}).\nCheck console/network panel for more info.`);
+    };
+
+    handleOnLoad = e => {
+      const { item, store } = this.props;
+      item.updateImageSize(e);
+      if (store.assistModel === null) {
+        store.setAssistModel(cocoSsd.load());
+      }
+      store.assistModel && store.enableAssist && predictImage(store.assistModel, item.imageRef);
     };
 
     updateGridSize = range => {
@@ -331,10 +351,11 @@ export default observer(
               }}
               style={imgStyle}
               src={item._value}
-              onLoad={item.updateImageSize}
+              onLoad={this.handleOnLoad}
               onError={this.handleError}
               onClick={this.handleOnClick}
               alt="LS"
+              crossorigin="anonymous"
             />
           </div>
           {/* @todo this is dirty hack; rewrite to proper async waiting for data to load */}

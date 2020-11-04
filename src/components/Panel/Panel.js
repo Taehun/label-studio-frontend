@@ -1,7 +1,6 @@
 import React from "react";
 import { observer } from "mobx-react";
-import { Button, Switch, Typography } from "antd";
-import { Slider, Row, Col } from "antd";
+import { Button, Switch, Typography, Slider } from "antd";
 import {
   UndoOutlined,
   RedoOutlined,
@@ -24,12 +23,16 @@ import Hint from "../Hint/Hint";
  */
 export default observer(({ store }) => {
   const { history } = store.completionStore.selected;
-  const [treshold, setTreshold] = React.useState(0.5);
+
   const handleTreshold = value => {
     if (isNaN(value)) {
       return;
     }
-    setTreshold(value);
+    store.setTreshold(value);
+  };
+
+  const handleAIAssist = checked => {
+    store.setEnableAssist(checked);
   };
 
   return (
@@ -86,19 +89,17 @@ export default observer(({ store }) => {
         <Typography>AI Assist</Typography>
         <Switch
           type="ghost"
-          defaultChecked
+          enabled={history && history.ai_assist}
           checkedChildren="On"
           unCheckedChildren="Off"
-          onClick={ev => {
-            history && history.reset();
-          }}
+          onChange={handleAIAssist}
         />
         <Typography>Treshold</Typography>
         <Slider
           min={0}
           max={1}
           onChange={handleTreshold}
-          value={typeof treshold === "number" ? treshold : 0}
+          value={typeof store.treshold === "number" ? store.treshold : 0.0}
           step={0.1}
         />
       </div>
