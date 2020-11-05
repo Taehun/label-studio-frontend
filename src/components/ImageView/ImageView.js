@@ -14,19 +14,17 @@ import * as cocoSsd from "@tensorflow-models/coco-ssd";
 import * as cpu from "@tensorflow/tfjs-backend-cpu";
 import * as webgl from "@tensorflow/tfjs-backend-webgl";
 
-async function predictImage(model, img) {
-  // Classify the image.
-  const predictions = await model.detect(img);
-
-  console.log("Predictions: ");
-  console.log(predictions);
-}
-
 export default observer(
   class ImageView extends Component {
     constructor(props) {
       super(props);
       this.state = { tfjs_model: null };
+    }
+
+    async predictImage(model, img) {
+      // Classify the image.
+      const result = await model.detect(img);
+      return result;
     }
 
     // stored position of canvas before creating region
@@ -128,7 +126,11 @@ export default observer(
     handleOnLoad = e => {
       const { item, store } = this.props;
       item.updateImageSize(e);
-      this.state.tfjs_model && predictImage(this.state.tfjs_model, item.imageRef);
+      if (this.state.tfjs_model) {
+        this.predictImage(this.state.tfjs_model, item.imageRef).then(result => {
+          item.setRegions(result);
+        });
+      }
     };
 
     updateGridSize = range => {
@@ -372,7 +374,7 @@ export default observer(
                 crossorigin="anonymous"
               />
             ) : (
-              "Loading Assist Model..."
+              "(Loading Assist Model...)"
             )}
           </div>
           {/* @todo this is dirty hack; rewrite to proper async waiting for data to load */}
