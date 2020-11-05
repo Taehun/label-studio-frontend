@@ -8,9 +8,6 @@ import Settings from "./SettingsStore";
 import Task from "./TaskStore";
 import User from "./UserStore";
 import Utils from "../utils";
-import * as cocoSsd from "@tensorflow-models/coco-ssd";
-import * as cpu from "@tensorflow/tfjs-backend-cpu";
-import * as webgl from "@tensorflow/tfjs-backend-webgl";
 
 export default types
   .model("AppStore", {
@@ -91,8 +88,6 @@ export default types
      */
     labeledSuccess: types.optional(types.boolean, false),
 
-    assistModel: types.optional(cocoSsd.ObjectDetection, null),
-
     enableAssist: false,
     treshold: types.optional(types.number, 0.5),
   })
@@ -111,10 +106,6 @@ export default types
 
     function setTreshold(val) {
       self.treshold = val;
-    }
-
-    function setAssistModel(model) {
-      self.assistModel = model;
     }
 
     /**
@@ -353,7 +344,6 @@ export default types
     }
 
     return {
-      setAssistModel,
       setEnableAssist,
       setTreshold,
       setFlags,

@@ -24,6 +24,11 @@ async function predictImage(model, img) {
 
 export default observer(
   class ImageView extends Component {
+    constructor(props) {
+      super(props);
+      this.state = { tfjs_model: null };
+    }
+
     // stored position of canvas before creating region
     canvasX;
     canvasY;
@@ -123,10 +128,7 @@ export default observer(
     handleOnLoad = e => {
       const { item, store } = this.props;
       item.updateImageSize(e);
-      if (store.assistModel === null) {
-        store.setAssistModel(cocoSsd.load());
-      }
-      store.assistModel && store.enableAssist && predictImage(store.assistModel, item.imageRef);
+      this.state.tfjs_model && predictImage(this.state.tfjs_model, item.imageRef);
     };
 
     updateGridSize = range => {
@@ -275,6 +277,15 @@ export default observer(
     }
 
     render() {
+      if (this.state.tfjs_model === null) {
+        cocoSsd.load().then(model => {
+          console.log("TFJS Model loaded");
+          this.setState({
+            tfjs_model: model,
+          });
+        });
+      }
+
       const { item, store } = this.props;
 
       // TODO fix me
@@ -344,19 +355,25 @@ export default observer(
             className={containerClassName}
             style={containerStyle}
           >
+            {// TODO
+            store.enableAssist ? console.log("AI Assist Enable") : " "}
             {filler}
-            <img
-              ref={ref => {
-                item.setImageRef(ref);
-              }}
-              style={imgStyle}
-              src={item._value}
-              onLoad={this.handleOnLoad}
-              onError={this.handleError}
-              onClick={this.handleOnClick}
-              alt="LS"
-              crossorigin="anonymous"
-            />
+            {this.state.tfjs_model ? (
+              <img
+                ref={ref => {
+                  item.setImageRef(ref);
+                }}
+                style={imgStyle}
+                src={item._value}
+                onLoad={this.handleOnLoad}
+                onError={this.handleError}
+                onClick={this.handleOnClick}
+                alt="LS"
+                crossorigin="anonymous"
+              />
+            ) : (
+              "Loading Assist Model..."
+            )}
           </div>
           {/* @todo this is dirty hack; rewrite to proper async waiting for data to load */}
           {item.stageWidth <= 1 ? null : (
