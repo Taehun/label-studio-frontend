@@ -260,32 +260,38 @@ const Model = types
       self.gridSize = value;
     },
 
-    setRegions(result) {
+    setRegions(result, treshold) {
       const states = self.states();
       if (states.length === 0) return;
       const control = states[0];
       result.map(value => {
         // Bounding Box only classes in settings
         if (control.findLabel(value.class)) {
-          control.updateFromResult(value.class);
-          const labels = { [control.valueType]: control.selectedValues() };
-          const bbox = [
-            Math.round(value.bbox[0]),
-            Math.round(value.bbox[1]),
-            Math.round(value.bbox[2]),
-            Math.round(value.bbox[3]),
-          ];
+          if (value.score > treshold) {
+            control.updateFromResult(value.class);
+            const labels = { [control.valueType]: control.selectedValues() };
+            const bbox = [
+              Math.round(value.bbox[0]),
+              Math.round(value.bbox[1]),
+              Math.round(value.bbox[2]),
+              Math.round(value.bbox[3]),
+            ];
 
-          const opts = {
-            x: bbox[0],
-            y: bbox[1],
-            width: bbox[2],
-            height: bbox[3],
-            coordstype: "px",
-          };
-          self.completion.createResult(opts, labels, control, self);
+            const opts = {
+              x: bbox[0],
+              y: bbox[1],
+              width: bbox[2],
+              height: bbox[3],
+              coordstype: "px",
+            };
+            self.completion.createResult(opts, labels, control, self);
+          }
         }
       });
+    },
+
+    resetRegions() {
+      self.completion.deleteAllRegions();
     },
 
     /**

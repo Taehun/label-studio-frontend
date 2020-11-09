@@ -123,12 +123,13 @@ export default observer(
       InfoModal.error(`Cannot load image (${this.props.item._value}).\nCheck console/network panel for more info.`);
     };
 
-    handleOnLoad = e => {
-      const { item, store } = this.props;
+    handleOnLoad = (e, enabled, treshold) => {
+      const { item } = this.props;
       item.updateImageSize(e);
-      if (this.state.tfjs_model) {
+      item.resetRegions();
+      if (this.state.tfjs_model && enabled) {
         this.predictImage(this.state.tfjs_model, item.imageRef).then(result => {
-          item.setRegions(result);
+          item.setRegions(result, treshold);
         });
       }
     };
@@ -136,7 +137,6 @@ export default observer(
     updateGridSize = range => {
       const { item } = this.props;
       item.freezeHistory();
-
       item.setGridSize(range);
     };
 
@@ -357,8 +357,6 @@ export default observer(
             className={containerClassName}
             style={containerStyle}
           >
-            {// TODO
-            store.enableAssist ? console.log("AI Assist Enable") : " "}
             {filler}
             {this.state.tfjs_model ? (
               <img
@@ -366,15 +364,19 @@ export default observer(
                   item.setImageRef(ref);
                 }}
                 style={imgStyle}
-                src={item._value}
-                onLoad={this.handleOnLoad}
+                src={`${item._value}?${store.enableAssist}&${store.treshold}`}
+                onLoad={ev => this.handleOnLoad(ev, store.enableAssist, store.treshold)}
                 onError={this.handleError}
                 onClick={this.handleOnClick}
                 alt="LS"
                 crossorigin="anonymous"
               />
             ) : (
-              "(Loading Assist Model...)"
+              <img
+                width={200}
+                height={200}
+                src="https://i.pinimg.com/originals/78/e8/26/78e826ca1b9351214dfdd5e47f7e2024.gif"
+              />
             )}
           </div>
           {/* @todo this is dirty hack; rewrite to proper async waiting for data to load */}

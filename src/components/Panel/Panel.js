@@ -89,7 +89,7 @@ export default observer(({ store }) => {
         <Typography>AI Assist</Typography>
         <Switch
           type="ghost"
-          enabled={history && history.ai_assist}
+          defaultChecked={store.enableAssist}
           checkedChildren="On"
           unCheckedChildren="Off"
           onChange={handleAIAssist}

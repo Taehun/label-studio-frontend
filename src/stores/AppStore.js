@@ -89,7 +89,7 @@ export default types
     labeledSuccess: types.optional(types.boolean, false),
 
     enableAssist: false,
-    treshold: types.optional(types.number, 0.5),
+    treshold: 0.5,
   })
   .views(self => ({
     /**
